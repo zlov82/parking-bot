@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    container_name: parking-bot
+    ports:
+      - "40103:3315"
+    environment:
+      BOT_USER_NAME: parking_notify_bot
+      BOT_TOKEN: 8763390325:AAFZ3i3fsaOOaCjQ1z3JlX__VqTUWfnlWEw
+      BOT_WEBHOOK_URL: https://test.app.zlov.xyz/telegram/webhook
+      BOT_WEBHOOK_PATH: /webhook
+      BOT_API_KEY: secret-key-for-bot
+      TELEGRAM_PRIVATE_CHAT: -1003626854203
+      BOT_BACKEND_URL: http://test.app.zlov.xyz/backend
+      BOT_BACKEND_API_KEY: secret-key-for-backend
+      CHECK_USER_GROUP: true
+      BOT_START_MESSAGE: "Привет, прикрепи машиноместо из меню и получай уведомления об уборках.\nИнформацию о боте всегда можешь найти на test.app.zlov.xyz"
+      CLEANING_FREE: true
