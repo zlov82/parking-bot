@@ -202,10 +202,48 @@ public class BackendApiClient {
                     }
                     return Mono.just(Collections.emptyList());
                 })
-                .onErrorResume(e->{
+                .onErrorResume(e -> {
                     return Mono.just(Collections.emptyList());
                 })
                 .block();
+    }
+
+    public boolean createFreeCleaning(LocalDate date) {
+        try {
+            HttpStatusCode statusCode = webClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/v1/cleaning/free")
+                            .queryParam("date", date)
+                            .build())
+                    .retrieve()
+                    .toBodilessEntity()
+                    .map(ResponseEntity::getStatusCode)
+                    .block();
+            log.debug("Response status {} on POST /api/v1/cleaning/free", statusCode);
+            return statusCode != null && statusCode.is2xxSuccessful();
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean deleteFreeCleaning(LocalDate date) {
+        try {
+            HttpStatusCode statusCode = webClient.delete()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/v1/cleaning/free")
+                            .queryParam("date", date)
+                            .build())
+                    .retrieve()
+                    .toBodilessEntity()
+                    .map(ResponseEntity::getStatusCode)
+                    .block();
+            log.debug("Response status {} on DELETE /api/v1/cleaning/free", statusCode);
+            return statusCode != null && statusCode.is2xxSuccessful();
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+            return false;
+        }
     }
 
     // DTO

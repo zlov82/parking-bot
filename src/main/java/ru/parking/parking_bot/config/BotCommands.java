@@ -21,7 +21,8 @@ public class BotCommands {
                 "commands", List.of(
                         Map.of("command", "/info", "description", "Ближайшие даты уборки моих ММ"),
                         Map.of("command", "/parking", "description", "Управление моими ММ"),
-                        Map.of("command", "/cleaning", "description", "Управление уборками")
+                        Map.of("command", "/cleaning", "description", "Управление уборками ММ"),
+                        Map.of("command", "/freecleaning", "description", "Управление свободными")
                 ),
                 "scope", Map.of("type", "all_private_chats")
         );

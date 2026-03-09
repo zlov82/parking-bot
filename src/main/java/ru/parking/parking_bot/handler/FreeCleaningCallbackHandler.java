@@ -17,7 +17,7 @@ import static ru.parking.parking_bot.utils.DefaultInlineKeyboards.deleteCleaning
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CleaningCallbackHandler implements CallbackHandler {
+public class FreeCleaningCallbackHandler implements CallbackHandler {
 
     private final TelegramApiClient telegramApi;
     private final FSMService fsmService;
@@ -25,7 +25,7 @@ public class CleaningCallbackHandler implements CallbackHandler {
 
     @Override
     public boolean canHandle(CallbackQuery callback) {
-        return callback.getData().startsWith("СLEANING_");
+        return callback.getData().startsWith("FREE_");
     }
 
     @Override
@@ -34,48 +34,42 @@ public class CleaningCallbackHandler implements CallbackHandler {
         String data = callback.getData();
         telegramApi.answerCallback(callback.getId(), "Обработка...");
 
-        if ("СLEANING_ADD".equals(data)) {
-            fsmService.setState(chatId, FSMService.State.CLEANING_DATE_WAITING);
+        if ("FREE_СLEANING_ADD".equals(data)) {
+            fsmService.setState(chatId, FSMService.State.FREE_CLEANING_ADD_WAITING);
             return BotResponse.builder()
                     .text("Введите дату уборки в формате ДД.ММ.ГГГГ")
                     .chatId(chatId.toString())
                     .build();
         }
 
-        if ("СLEANING_DELETE".equals(data)) {
-            List<LocalDate> cleaningsDates = backendService.getNextCleaningsDates(10);
+        if ("FREE_СLEANING_DELETE".equals(data)) {
+            List<LocalDate> cleaningsDates = backendService.getCleaningsFree();
             return BotResponse.builder()
                     .text("Выберите дату уборку, которую следует удалить")
                     .chatId(chatId.toString())
-                    .keyboard(deleteCleaningList(cleaningsDates, "СLEANING_DELETE:"))
+                    .keyboard(deleteCleaningList(cleaningsDates, "FREE_CLEANING_DELETE:"))
                     .build();
+
         }
 
-        if (data.startsWith("СLEANING_DELETE:")) {
-            String value = data.substring("CLEANING_DELETE:".length());
+        if (data.startsWith("FREE_CLEANING_DELETE:")) {
+            String value = data.substring("FREE_CLEANING_DELETE:".length());
             log.info("User {} wants to delete cleaning date {}", chatId, value);
-            try {
-                LocalDate cleaningDate = LocalDate.parse(value);
-                boolean success = backendService.deleteCleaningPlan(cleaningDate);
-                if (success) {
-                    return BotResponse.builder()
-                            .chatId(chatId.toString())
-                            .text("План уборки на " + cleaningDate + " удален")
-                            .build();
-                } else {
-                    return BotResponse.builder()
-                            .chatId(chatId.toString())
-                            .text("Не удалось удалить дату уборки")
-                            .build();
-                }
-            } catch (RuntimeException e) {
-                log.warn("failed to parse date {}", e.getMessage());
+            boolean isDeleted = backendService.deleteFreeCleaning(value);
+            if (isDeleted) {
                 return BotResponse.builder()
                         .chatId(chatId.toString())
-                        .text("Не удалось удалить дату уборки")
+                        .text("Дата уборки свободных ММ удалена ❌")
+                        .build();
+            } else {
+                return BotResponse.builder()
+                        .chatId(chatId.toString())
+                        .text("Ошибка удаления")
                         .build();
             }
+
         }
+
         throw new IllegalStateException("Unsupported callback " + data);
     }
 }
