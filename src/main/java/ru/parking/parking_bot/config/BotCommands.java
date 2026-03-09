@@ -22,7 +22,7 @@ public class BotCommands {
                         Map.of("command", "/info", "description", "Ближайшие даты уборки моих ММ"),
                         Map.of("command", "/parking", "description", "Управление моими ММ"),
                         Map.of("command", "/cleaning", "description", "Управление уборками ММ"),
-                        Map.of("command", "/freecleaning", "description", "Управление свободными")
+                        Map.of("command", "/freecleaning", "description", "Управление уборками свободных ММ")
                 ),
                 "scope", Map.of("type", "all_private_chats")
         );
