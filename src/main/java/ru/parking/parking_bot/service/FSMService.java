@@ -34,7 +34,8 @@ public class FSMService {
         CLEANING_DATE_WAITING,
         CLEANING_START_PARKING_WAITING,
         CLEANING_END_PARKING_WAITING,
-        DELETE_CLEANING_WAITING
+        DELETE_CLEANING_WAITING,
+        FREE_CLEANING_ADD_WAITING
     }
 
 
@@ -186,6 +187,41 @@ public class FSMService {
                 }
             }
 
+            case FREE_CLEANING_ADD_WAITING -> {
+                try {
+                    DateTimeFormatter userFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                    LocalDate date = LocalDate.parse(text, userFormatter);
+                    if (date.isBefore(LocalDate.now()) || date.isAfter(LocalDate.now().plusDays(30))) {
+                        return BotResponse.builder()
+                                .chatId(userId.toString())
+                                .text("Дата не может быть в прошлом или дальше месяца от текущей\nПовторите ввод даты:")
+                                .build();
+
+                    }
+                    log.debug("Save free cleaning date {}", date);
+                    boolean isSaved = backendClient.saveFreeCleanind(date);
+                    if (!isSaved) {
+                        clearState(userId);
+                        return BotResponse.builder()
+                                .chatId(userId.toString())
+                                .text("Не смог установить время уборки свободных ММ")
+                                .build();
+                    } else {
+                        clearState(userId);
+                        return BotResponse.builder()
+                                .chatId(userId.toString())
+                                .text("✅ Уборка свободных ММ запланирована")
+                                .build();
+                    }
+
+                } catch (DateTimeParseException e) {
+                    return BotResponse.builder()
+                            .chatId(userId.toString())
+                            .text("Пожалуйста, введите дату в формате ДД.ММ.ГГГГ")
+                            .build();
+                }
+            }
+
         }
         throw new IllegalStateException("Unhandled state for text: " + state);
     }
@@ -204,7 +240,7 @@ public class FSMService {
         }
 
         if (isExpired(userState)) {
-            log.debug("User state IS EXPIRED: {}",userState.toString());
+            log.debug("User state IS EXPIRED: {}", userState.toString());
             userStateDb.remove(userId);
             return State.IDLE;
         }
@@ -220,7 +256,7 @@ public class FSMService {
     }
 
     public void clearState(Long userId) {
-        log.debug("User {} state is clearing",userId);
+        log.debug("User {} state is clearing", userId);
         userStateDb.remove(userId);
     }
 

@@ -8,6 +8,8 @@ import ru.parking.parking_bot.client.BackendApiClient;
 import ru.parking.parking_bot.dto.CleaningPlanResponse;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,6 +61,21 @@ public class BackendService {
 
     public List<LocalDate> getCleaningsFree() {
         return client.getFreeCleanings();
+    }
+
+    public boolean saveFreeCleanind(LocalDate date) {
+        return client.createFreeCleaning(date);
+    }
+
+    public boolean deleteFreeCleaning(String value) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate date = LocalDate.parse(value, formatter);
+            return client.deleteFreeCleaning(date);
+        } catch (DateTimeParseException e) {
+            log.warn("Error convert {} to LocalDate", value);
+            return false;
+        }
     }
 }
 

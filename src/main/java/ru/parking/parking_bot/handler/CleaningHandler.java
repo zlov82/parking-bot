@@ -18,7 +18,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CleaningHandler implements CommandHandler{
+public class CleaningHandler implements CommandHandler {
 
     private final FSMService fsmService;
     private final BackendService backendService;
@@ -72,17 +72,16 @@ public class CleaningHandler implements CommandHandler{
         );
     }
 
-        private InlineKeyboardMarkup cleaningAddKeyboard() {
-            return InlineKeyboardFactory.keyboard(
-                    InlineKeyboardFactory.row(
-                            InlineKeyboardFactory.callbackButton(
-                                    "➕ Добавить дату уборки", "СLEANING_ADD"
-                            )
-                    )
-            );
+    private InlineKeyboardMarkup cleaningAddKeyboard() {
+        return InlineKeyboardFactory.keyboard(
+                InlineKeyboardFactory.row(
+                        InlineKeyboardFactory.callbackButton(
+                                "➕ Добавить дату уборки", "СLEANING_ADD"
+                        )
+                )
+        );
     }
 
-    //todo переделать на уборки с парковочными местами
     private String buildParkingCleaningTable(List<CleaningPlanResponse> data) {
         log.debug("creating table for new cleanings");
         StringBuilder sb = new StringBuilder();
