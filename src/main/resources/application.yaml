@@ -21,6 +21,13 @@ backend:
   api-key: ${BOT_BACKEND_API_KEY}
   base-url: ${BOT_BACKEND_URL}
 
+proxy:
+  enabled: ${PROXY_ENABLED:false}
+  host: ${PROXY_HOST:}
+  port: ${PROXY_PORT:1080}
+  username: ${PROXY_USERNAME:}
+  password: ${PROXY_PASSWORD:}
+
 logging:
   level:
     ru.parking.parking_bot: DEBUG
