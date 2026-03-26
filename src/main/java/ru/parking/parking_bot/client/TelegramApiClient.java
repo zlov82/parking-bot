@@ -6,6 +6,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.parking.parking_bot.config.BotConfig;
 import ru.parking.parking_bot.dto.telegramApi.Message;
 import ru.parking.parking_bot.dto.telegramApi.TelegramResponse;
@@ -89,6 +90,20 @@ public class TelegramApiClient {
                     .block();
         } catch (Exception e) {
             log.warn("answerCallback failed callbackId={}", callbackId, e);
+        }
+    }
+
+    // Telegram API /sendMessage (полный объект с клавиатурой и parseMode)
+    public void sendFullMessage(SendMessage message) {
+        try {
+            webClient.post()
+                    .uri(api("/sendMessage"))
+                    .bodyValue(message)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+        } catch (Exception e) {
+            log.error("Telegram sendFullMessage failed chatId={}", message.getChatId(), e);
         }
     }
 

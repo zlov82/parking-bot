@@ -54,10 +54,10 @@
             <version>9.2.1</version>
         </dependency>
 
-        <!-- Webhook starter -->
+        <!-- Long polling starter -->
         <dependency>
             <groupId>org.telegram</groupId>
-            <artifactId>telegrambots-springboot-webhook-starter</artifactId>
+            <artifactId>telegrambots-springboot-longpolling-starter</artifactId>
             <version>9.2.1</version>
         </dependency>
 
