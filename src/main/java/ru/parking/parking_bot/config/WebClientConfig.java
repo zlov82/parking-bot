@@ -49,7 +49,7 @@ public class WebClientConfig {
                 .baseUrl(baseUrl)
                 .defaultHeader("X-API-KEY", apiKey)
                 .defaultHeader("Content-Type", "application/json")
-                .clientConnector(buildConnector(proxy))
+                //.clientConnector(buildConnector(proxy))
                 .build();
     }
 }

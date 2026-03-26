@@ -9,7 +9,7 @@ services:
     environment:
       BOT_USER_NAME: parking_notify_bot
       BOT_TOKEN: 8763390325:AAFZ3i3fsaOOaCjQ1z3JlX__VqTUWfnlWEw
-BOT_API_KEY: secret-key-for-bot
+      BOT_API_KEY: secret-key-for-bot
       TELEGRAM_PRIVATE_CHAT: -1003626854203
       BOT_BACKEND_URL: http://test.app.zlov.xyz/backend
       BOT_BACKEND_API_KEY: secret-key-for-backend
