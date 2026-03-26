@@ -7,9 +7,7 @@ telegram:
     username: ${BOT_USER_NAME}
     token: ${BOT_TOKEN}
     api-key: ${BOT_API_KEY}
-    webhook-url: ${BOT_WEBHOOK_URL}
-    webhook-path: ${BOT_WEBHOOK_PATH}
-    private-group-id: ${TELEGRAM_PRIVATE_CHAT}
+private-group-id: ${TELEGRAM_PRIVATE_CHAT}
     start-message: ${BOT_START_MESSAGE}
     check-user-group: ${CHECK_USER_GROUP}
     cleaning-free: ${CLEANING_FREE}
