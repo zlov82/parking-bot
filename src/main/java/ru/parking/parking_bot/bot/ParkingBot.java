@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
+import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.parking.parking_bot.client.TelegramApiClient;
@@ -17,12 +18,10 @@ import ru.parking.parking_bot.router.CommandRouter;
 import ru.parking.parking_bot.service.FSMService;
 import ru.parking.parking_bot.service.UserGroupValidator;
 
-import java.util.List;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ParkingBot implements SpringLongPollingBot {
+public class ParkingBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
     private final BotConfig config;
     private final CommandRouter commandRouter;
@@ -46,11 +45,7 @@ public class ParkingBot implements SpringLongPollingBot {
     }
 
     @Override
-    public void consume(List<Update> updates) {
-        updates.forEach(this::processUpdate);
-    }
-
-    private void processUpdate(Update update) {
+    public void consume(Update update) {
         if (update.hasMessage()) {
             handleMessage(update);
         } else if (update.hasCallbackQuery()) {
