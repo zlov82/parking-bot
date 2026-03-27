@@ -19,6 +19,7 @@ import ru.parking.parking_bot.dto.BotResponse;
 import ru.parking.parking_bot.router.CallbackRouter;
 import ru.parking.parking_bot.router.CommandRouter;
 import ru.parking.parking_bot.service.FSMService;
+import ru.parking.parking_bot.service.HomelessService;
 import ru.parking.parking_bot.service.UserGroupValidator;
 
 @Slf4j
@@ -35,6 +36,7 @@ public class ParkingBot implements SpringLongPollingBot, LongPollingUpdateConsum
     private final FSMService userStateService;
     private final BotReplyService botReply;
     private final TelegramApiClient telegramApiClient;
+    private final HomelessService homelessService;
 
     @Value("${telegram.bot.check-user-group}")
     private Boolean isCheckGroup;
@@ -77,6 +79,16 @@ public class ParkingBot implements SpringLongPollingBot, LongPollingUpdateConsum
                 );
                 return;
             }
+        }
+
+        if (update.getMessage().hasPhoto()) {
+            Long userId = update.getMessage().getFrom().getId();
+            Long chatId = update.getMessage().getChatId();
+            log.debug("Receive photo from user {} in chat {}", userId, chatId);
+            BotResponse response = homelessService.processNewHomeless(update);
+            logOutgoingMessage(response);
+            telegramApiClient.sendFullMessage(toSendMessage(response));
+            return;
         }
 
         if (update.getMessage().hasText()) {
