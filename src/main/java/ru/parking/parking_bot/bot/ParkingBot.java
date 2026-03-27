@@ -82,9 +82,7 @@ public class ParkingBot implements SpringLongPollingBot, LongPollingUpdateConsum
         }
 
         if (update.getMessage().hasPhoto()) {
-            Long userId = update.getMessage().getFrom().getId();
-            Long chatId = update.getMessage().getChatId();
-            log.debug("Receive photo from user {} in chat {}", userId, chatId);
+            log.debug("Receive photo from user {} in chat {}", userId, update.getMessage().getChatId());
             BotResponse response = homelessService.processNewHomeless(update);
             logOutgoingMessage(response);
             telegramApiClient.sendFullMessage(toSendMessage(response));
