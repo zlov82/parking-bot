@@ -59,7 +59,7 @@ public class HomelessService {
             if (isUpdate) {
                 return BotResponse.builder()
                         .chatId(userId.toString())
-                        .text("В базу успешно занесен бомж с номером " + plate)
+                        .text("В базу успешно занесен автобомж с номером " + plate)
                         .build();
             }
         } else {

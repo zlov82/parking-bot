@@ -139,14 +139,25 @@ public class TelegramApiClient {
     public byte[] downloadFile(String fileId) {
 
         String filePath = getFilePath(fileId);
+        log.info("Download start: filePath={}", filePath);
 
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/file/bot{token}/{filePath}")
-                        .build(config.getBotToken(), filePath))
-                .retrieve()
-                .bodyToMono(byte[].class)
-                .block();
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            try {
+                byte[] result = webClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/file/bot{token}/{filePath}")
+                                .build(config.getBotToken(), filePath))
+                        .retrieve()
+                        .bodyToMono(byte[].class)
+                        .block();
+                log.info("Download success: attempt={} filePath={} bytes={}", attempt, filePath, result != null ? result.length : 0);
+                return result;
+            } catch (Exception e) {
+                log.warn("Download attempt {} failed: filePath={}", attempt, filePath, e);
+                if (attempt == 3) throw e;
+            }
+        }
+        throw new IllegalStateException("unreachable");
     }
 
 

@@ -41,6 +41,9 @@ public class ParkingBot implements SpringLongPollingBot, LongPollingUpdateConsum
     @Value("${telegram.bot.check-user-group}")
     private Boolean isCheckGroup;
 
+    @Value("${telegram.bot.photo-upload-enabled}")
+    private Boolean isPhotoUploadEnabled;
+
     @Override
     public String getBotToken() {
         return config.getBotToken();
@@ -83,6 +86,16 @@ public class ParkingBot implements SpringLongPollingBot, LongPollingUpdateConsum
 
         if (update.getMessage().hasPhoto()) {
             log.debug("Receive photo from user {} in chat {}", userId, update.getMessage().getChatId());
+            if (!isPhotoUploadEnabled) {
+                log.debug("Photo upload is disabled, skipping photo from user {}", userId);
+                telegramApiClient.sendFullMessage(
+                        SendMessage.builder()
+                                .chatId(userId)
+                                .text("Загрузка фото временно отключена")
+                                .build()
+                );
+                return;
+            }
             BotResponse response = homelessService.processNewHomeless(update);
             logOutgoingMessage(response);
             telegramApiClient.sendFullMessage(toSendMessage(response));

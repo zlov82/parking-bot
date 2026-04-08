@@ -11,6 +11,7 @@ telegram:
     start-message: ${BOT_START_MESSAGE}
     check-user-group: ${CHECK_USER_GROUP}
     cleaning-free: ${CLEANING_FREE}
+    photo-upload-enabled: ${PHOTO_UPLOAD_ENABLED:false}
 
 server:
   port: 3315
