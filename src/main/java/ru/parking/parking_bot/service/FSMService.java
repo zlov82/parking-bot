@@ -25,6 +25,7 @@ public class FSMService {
     private final Map<Long, CleaningPlan> cleaningPlanDb = new ConcurrentHashMap<>();
 
     public record UserState(State state,
+                            String fileId,
                             Instant updatedAt) {
     }
 
@@ -34,8 +35,8 @@ public class FSMService {
         CLEANING_DATE_WAITING,
         CLEANING_START_PARKING_WAITING,
         CLEANING_END_PARKING_WAITING,
-        DELETE_CLEANING_WAITING,
-        FREE_CLEANING_ADD_WAITING
+        FREE_CLEANING_ADD_WAITING,
+        HOMELESS_SELECT
     }
 
 
@@ -228,7 +229,7 @@ public class FSMService {
 
     //
     public void setState(Long userId, State state) {
-        userStateDb.put(userId, new UserState(state, Instant.now()));
+        userStateDb.put(userId, new UserState(state, null, Instant.now()));
         log.debug("FsmState for user {} is {}", userId, userStateDb.get(userId).toString());
     }
 
@@ -272,6 +273,22 @@ public class FSMService {
 
     private void clearPlan(Long userId) {
         cleaningPlanDb.remove(userId);
+    }
+
+    public void setFileId(Long userId, String fileId) {
+        UserState state = userStateDb.get(userId);
+
+        if (state != null) {
+            userStateDb.put(
+                    userId,
+                    new UserState(state.state(), fileId, Instant.now())
+            );
+        }
+    }
+
+    public String getFileId(Long userId) {
+        UserState state = userStateDb.get(userId);
+        return state != null ? state.fileId() : null;
     }
 
 }

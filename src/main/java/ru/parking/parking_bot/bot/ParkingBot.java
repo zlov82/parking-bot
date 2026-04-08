@@ -19,6 +19,7 @@ import ru.parking.parking_bot.dto.BotResponse;
 import ru.parking.parking_bot.router.CallbackRouter;
 import ru.parking.parking_bot.router.CommandRouter;
 import ru.parking.parking_bot.service.FSMService;
+import ru.parking.parking_bot.service.HomelessService;
 import ru.parking.parking_bot.service.UserGroupValidator;
 
 @Slf4j
@@ -35,9 +36,13 @@ public class ParkingBot implements SpringLongPollingBot, LongPollingUpdateConsum
     private final FSMService userStateService;
     private final BotReplyService botReply;
     private final TelegramApiClient telegramApiClient;
+    private final HomelessService homelessService;
 
     @Value("${telegram.bot.check-user-group}")
     private Boolean isCheckGroup;
+
+    @Value("${telegram.bot.photo-upload-enabled}")
+    private Boolean isPhotoUploadEnabled;
 
     @Override
     public String getBotToken() {
@@ -77,6 +82,24 @@ public class ParkingBot implements SpringLongPollingBot, LongPollingUpdateConsum
                 );
                 return;
             }
+        }
+
+        if (update.getMessage().hasPhoto()) {
+            log.debug("Receive photo from user {} in chat {}", userId, update.getMessage().getChatId());
+            if (!isPhotoUploadEnabled) {
+                log.debug("Photo upload is disabled, skipping photo from user {}", userId);
+                telegramApiClient.sendFullMessage(
+                        SendMessage.builder()
+                                .chatId(userId)
+                                .text("Загрузка фото временно отключена")
+                                .build()
+                );
+                return;
+            }
+            BotResponse response = homelessService.processNewHomeless(update);
+            logOutgoingMessage(response);
+            telegramApiClient.sendFullMessage(toSendMessage(response));
+            return;
         }
 
         if (update.getMessage().hasText()) {

@@ -6,8 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.HttpProtocol;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
+
+import java.time.Duration;
 
 @Configuration
 public class WebClientConfig {
@@ -16,7 +19,13 @@ public class WebClientConfig {
         if (!proxy.isEnabled()) {
             return new ReactorClientHttpConnector(HttpClient.create());
         }
-        HttpClient httpClient = HttpClient.create()
+        // Каждый запрос — новое соединение, без пула.
+        // Duration.ZERO в maxIdleTime означает "без ограничения" (не "сразу вытеснять"),
+        // поэтому ConnectionProvider.newConnection() — единственный способ гарантировать
+        // что мёртвое прокси-соединение никогда не переиспользуется.
+        HttpClient httpClient = HttpClient.newConnection()
+                .protocol(HttpProtocol.HTTP11)
+                .responseTimeout(Duration.ofMinutes(5))
                 .proxy(spec -> {
                     var builder = spec.type(ProxyProvider.Proxy.SOCKS5)
                             .host(proxy.getHost())

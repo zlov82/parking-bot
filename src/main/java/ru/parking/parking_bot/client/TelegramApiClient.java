@@ -118,6 +118,48 @@ public class TelegramApiClient {
                 .subscribe();
     }
 
+    public String getFilePath(String fileId) {
+
+        TelegramFileResponse response = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/bot{token}/getFile")
+                        .queryParam("file_id", fileId)
+                        .build(config.getBotToken()))
+                .retrieve()
+                .bodyToMono(TelegramFileResponse.class)
+                .block();
+
+        if (response != null && response.ok) {
+            return response.result.file_path;
+        }
+
+        throw new RuntimeException("Failed to get file path");
+    }
+
+    public byte[] downloadFile(String fileId) {
+
+        String filePath = getFilePath(fileId);
+        log.info("Download start: filePath={}", filePath);
+
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            try {
+                byte[] result = webClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/file/bot{token}/{filePath}")
+                                .build(config.getBotToken(), filePath))
+                        .retrieve()
+                        .bodyToMono(byte[].class)
+                        .block();
+                log.info("Download success: attempt={} filePath={} bytes={}", attempt, filePath, result != null ? result.length : 0);
+                return result;
+            } catch (Exception e) {
+                log.warn("Download attempt {} failed: filePath={}", attempt, filePath, e);
+                if (attempt == 3) throw e;
+            }
+        }
+        throw new IllegalStateException("unreachable");
+    }
+
 
     // DTO
     public record SendMessageRequest(Long chat_id, String text) {}
@@ -131,6 +173,16 @@ public class TelegramApiClient {
 
     public static class ChatMember {
         public String status;
+    }
+
+    public static class TelegramFileResponse {
+        public boolean ok;
+        public TelegramFile result;
+    }
+
+    public static class TelegramFile {
+        public String file_id;
+        public String file_path;
     }
 
 }

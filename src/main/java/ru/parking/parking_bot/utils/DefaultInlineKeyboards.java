@@ -23,4 +23,19 @@ public final class DefaultInlineKeyboards {
         return InlineKeyboardFactory.keyboardFromRows(rows);
     }
 
+    public static <T> InlineKeyboardMarkup selectValues(List<T> values, String callbackData) {
+        List<InlineKeyboardRow> rows = values.stream()
+                .map(value ->
+                        InlineKeyboardFactory.row(
+                                InlineKeyboardFactory.callbackButton(
+                                        String.valueOf(value),
+                                        callbackData + value
+                                )
+                        )
+                )
+                .toList();
+
+        return InlineKeyboardFactory.keyboardFromRows(rows);
+    }
+
 }

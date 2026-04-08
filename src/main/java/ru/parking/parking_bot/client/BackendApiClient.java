@@ -3,13 +3,20 @@ package ru.parking.parking_bot.client;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import ru.parking.parking_bot.dto.CheckPlateResponse;
 import ru.parking.parking_bot.dto.CleaningPlanResponse;
+import ru.parking.parking_bot.dto.TImage;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -244,6 +251,78 @@ public class BackendApiClient {
             log.warn(e.getMessage());
             return false;
         }
+    }
+
+    public List<String> uploadTImage(TImage image) {
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+        ByteArrayResource resource = new ByteArrayResource(image.getData()) {
+            @Override
+            public String getFilename() {
+                return image.getFilePath() != null ? image.getFilePath() : "photo.jpg";
+            }
+        };
+
+        body.add("file", resource);
+        body.add("telegramFileId", image.getFileId());
+        body.add("userId", image.getUserId().toString());
+        body.add("chatId", image.getChatId().toString());
+
+        try {
+            List<String> plates = webClient.post()
+                    .uri("/homeless/upload")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(body))
+                    .exchangeToMono(response -> {
+                        int status = response.statusCode().value();
+                        log.info("HTTP status {}", status);
+                        return response.bodyToMono(
+                                new ParameterizedTypeReference<List<String>>() {
+                                }
+                        ).doOnNext(p -> log.info("Response body {}", p));
+                    })
+                    .block();
+
+            return plates != null ? plates : List.of();
+        } catch (Exception e) {
+            log.error("Upload failed {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    public boolean setHomelessNumber(String fileId, String plate) {
+        try {
+            HttpStatusCode statusCode = webClient.post()
+                    .uri("/homeless/{fileId}/{plateNumber}", fileId, plate)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .map(ResponseEntity::getStatusCode)
+                    .block();
+            log.debug("Response status {} on POST /homeless/{fileId}/{plateNumber}", statusCode);
+            return statusCode != null && statusCode.is2xxSuccessful();
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+            return false;
+        }
+    }
+
+    public Optional<CheckPlateResponse> checkFile(String fileId) {
+        return webClient.get()
+                .uri("/homeless/{fileId}", fileId)
+                .exchangeToMono(response -> {
+                    if (response.statusCode() == HttpStatus.NOT_FOUND) {
+                        return Mono.empty();
+                    }
+                    if (response.statusCode().is2xxSuccessful()) {
+                        return response.bodyToMono(
+                                new ParameterizedTypeReference<CheckPlateResponse>() {
+                                }
+                        );
+                    }
+                    return response.createException().flatMap(Mono::error);
+                })
+                .blockOptional();
     }
 
     // DTO
