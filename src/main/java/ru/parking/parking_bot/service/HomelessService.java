@@ -19,6 +19,7 @@ public class HomelessService {
 
     private final MediaService mediaService;
     private final FSMService fsmService;
+    private final BackendService backendService;
 
     public BotResponse processNewHomeless(Update update) {
 
@@ -29,7 +30,7 @@ public class HomelessService {
         image.setUserId(userId);
         image.setChatId(chatId);
 
-        log.debug("Image from telegram fileId {}, path {}:",image.getFileId(),image.getFilePath());
+        log.debug("Image from telegram fileId {}, path {}:", image.getFileId(), image.getFilePath());
 
         Optional<CheckPlateResponse> optional = mediaService.getPlateById(image.getFileId());
         if (optional.isPresent()) {
@@ -55,11 +56,23 @@ public class HomelessService {
             String plate = plates.getFirst();
             String fileId = image.getFileId();
             log.debug("File id to update {}", fileId);
-            boolean isUpdate = mediaService.setPlate(fileId, plate);
-            if (isUpdate) {
+            boolean isAlreadyExist = backendService.isNumberIsAlreadyExist(plates.getFirst());
+            if (!isAlreadyExist) {
+                boolean isUpdate = mediaService.setPlate(fileId, plate);
+                if (isUpdate) {
+                    return BotResponse.builder()
+                            .chatId(userId.toString())
+                            .text("В базу успешно занесен автобомж с номером " + plate)
+                            .build();
+                }
                 return BotResponse.builder()
                         .chatId(userId.toString())
-                        .text("В базу успешно занесен автобомж с номером " + plate)
+                        .text("Не удалось записать номер в базу")
+                        .build();
+            } else {
+                return BotResponse.builder()
+                        .chatId(userId.toString())
+                        .text("Фото с номером " + plates.getFirst() + " уже загружали сегодня")
                         .build();
             }
         } else {
@@ -68,14 +81,8 @@ public class HomelessService {
             return BotResponse.builder()
                     .chatId(userId.toString())
                     .text("На фото есть несколько номеров. Нужно выбрать один:")
-                    .keyboard(DefaultInlineKeyboards.selectValues(plates,"HOMELESS_SELECT:"))
+                    .keyboard(DefaultInlineKeyboards.selectValues(plates, "HOMELESS_SELECT:"))
                     .build();
         }
-
-        return BotResponse.builder()
-                .chatId(userId.toString())
-                .text("Что-то пошло не так...")
-                .build();
-
     }
 }

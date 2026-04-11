@@ -291,6 +291,21 @@ public class BackendApiClient {
         }
     }
 
+    public boolean homelessNumberExists(String number) {
+        try {
+            HttpStatusCode statusCode = webClient.get()
+                    .uri("/homeless/exists/{number}", number)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .map(ResponseEntity::getStatusCode)
+                    .block();
+            return statusCode != null && statusCode.is2xxSuccessful();
+        } catch (Exception e) {
+            log.warn("Response GET /homeless/exists/{} : {}", number, e.getMessage());
+            return false;
+        }
+    }
+
     public boolean setHomelessNumber(String fileId, String plate) {
         try {
             HttpStatusCode statusCode = webClient.post()

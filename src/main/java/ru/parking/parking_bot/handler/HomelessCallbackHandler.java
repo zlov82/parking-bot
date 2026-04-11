@@ -34,8 +34,16 @@ public class HomelessCallbackHandler implements CallbackHandler {
         if (data.startsWith("HOMELESS_SELECT:")) {
             String value = data.substring("HOMELESS_SELECT:".length());
             log.info("User {} wants homeless plate {}", chatId, value);
+            boolean isNumberAlreadyExist = backendService.isNumberIsAlreadyExist(value);
+            if (isNumberAlreadyExist) {
+                return BotResponse.builder()
+                        .chatId(chatId.toString())
+                        .text("Машина с номером " + value + " уже загружалась сегодня")
+                        .build();
+            }
+
             String fileId = fsmService.getFileId(chatId);
-           log.debug("get FileId ib FSMService {}",fileId);
+            log.debug("get FileId ib FSMService {}",fileId);
 
             if (mediaService.setPlate(fileId, value)) {
                 fsmService.clearState(chatId);
