@@ -16,7 +16,7 @@ services:
       CHECK_USER_GROUP: true
       BOT_START_MESSAGE: "Привет, прикрепи машиноместо из меню и получай уведомления об уборках.\nИнформацию о боте всегда можешь найти на test.app.zlov.xyz"
       CLEANING_FREE: true
-      PHOTO_UPLOAD_ENABLED: false
+      PHOTO_UPLOAD_ENABLED: true
       PROXY_ENABLED: false
       PROXY_HOST: 38.133.127.7
       PROXY_PORT: 43068

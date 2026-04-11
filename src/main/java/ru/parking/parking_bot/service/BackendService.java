@@ -77,5 +77,9 @@ public class BackendService {
             return false;
         }
     }
+
+    public boolean isNumberIsAlreadyExist(String number) {
+        return client.homelessNumberExists(number);
+    }
 }
 
