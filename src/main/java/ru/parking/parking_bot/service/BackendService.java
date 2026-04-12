@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.parking.parking_bot.client.BackendApiClient;
 import ru.parking.parking_bot.dto.CleaningPlanResponse;
+import ru.parking.parking_bot.dto.HomelessStatistics;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -80,6 +81,10 @@ public class BackendService {
 
     public boolean isNumberIsAlreadyExist(String number) {
         return client.homelessNumberExists(number);
+    }
+
+    public Optional<HomelessStatistics> getHomelessStatistics() {
+        return client.getHomelessStatistics();
     }
 }
 

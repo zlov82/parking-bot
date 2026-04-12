@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import ru.parking.parking_bot.dto.CheckPlateResponse;
 import ru.parking.parking_bot.dto.CleaningPlanResponse;
+import ru.parking.parking_bot.dto.HomelessStatistics;
 import ru.parking.parking_bot.dto.TImage;
 
 import java.time.LocalDate;
@@ -320,6 +321,22 @@ public class BackendApiClient {
             log.warn(e.getMessage());
             return false;
         }
+    }
+
+    public Optional<HomelessStatistics> getHomelessStatistics() {
+        return webClient.get()
+                .uri("/homeless/statistics")
+                .exchangeToMono(response -> {
+                    if (response.statusCode().is2xxSuccessful()) {
+                        return response.bodyToMono(HomelessStatistics.class);
+                    }
+                    return Mono.empty();
+                })
+                .onErrorResume(e -> {
+                    log.warn("Response GET /homeless/statistics: {}", e.getMessage());
+                    return Mono.empty();
+                })
+                .blockOptional();
     }
 
     public Optional<CheckPlateResponse> checkFile(String fileId) {
